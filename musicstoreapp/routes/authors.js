@@ -34,8 +34,8 @@ module.exports = function (app) {
 
     app.post('/authors/add', function (req, res){
 
-        if(req.body.name != null && req.body.name.length!=0 && typeof(req.body.name) != "undefined") {
-            if (req.body.group != null && req.body.group.length!=0 && typeof(req.body.group) != "undefined") {
+        if(req.body.name != null && typeof(req.body.name) != "undefined" && req.body.name.trim().length!=0) {
+            if (req.body.group != null && typeof(req.body.group) != "undefined" && req.body.group.trim().length!=0 ) {
                 let response = "Autor agregado: " + req.body.name + "<br>"
                     + "Grupo: " + req.body.group + "<br>"
                     + " Rol: " + req.body.role;
