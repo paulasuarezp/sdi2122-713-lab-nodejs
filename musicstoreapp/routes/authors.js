@@ -24,7 +24,14 @@ module.exports = function (app) {
     });
 
     app.get('/authors/add', function (req, res) {
-        res.render("authors/add.twig");
+        let roles = [
+            "Cantante", "Batería", "Guitarrista", "Bajista", "Teclista"
+        ]
+        let response = {
+           // seller: 'Tienda de canciones',
+            roles: roles
+        }
+        res.render("authors/add.twig", response);
     });
 
     app.get('/authors/:id', function(req, res) {
