@@ -1,17 +1,31 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+let createError = require('http-errors');
+let express = require('express');
+let path = require('path');
+let cookieParser = require('cookie-parser');
+let logger = require('morgan');
 
 
-var app = express();
+let app = express();
+
+let expressSession = require('express-session');
+app.use(expressSession({
+  secret: 'abcdefg',
+  resave: true,
+  saveUninitialized: true
+}));
+
+
+let crypto = require('crypto');
+
 let fileUpload = require('express-fileupload');
 app.use(fileUpload({
   limits: { fileSize: 50 * 1024 * 1024 },
   createParentPath: true
 }));
 app.set('uploadPath', __dirname)
+app.set('clave','abcdefg');
+app.set('crypto',crypto);
+
 
 
 let bodyParser = require('body-parser');
@@ -22,14 +36,18 @@ const { MongoClient } = require("mongodb");
 const url =
     'mongodb://admin:paulasdi@tiendamusica-shard-00-00.gjfhg.mongodb.net:27017,tiendamusica-shard-00-01.gjfhg.mongodb.net:27017,tiendamusica-shard-00-02.gjfhg.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-n8bnv7-shard-0&authSource=admin&retryWrites=true&w=majority';
 app.set('connectionStrings', url);
+
+
 let songsRepository = require("./repositories/songsRepository.js");
 songsRepository.init(app, MongoClient);
 require("./routes/songs.js")(app, songsRepository);
 
+const usersRepository = require("./repositories/usersRepository.js");
+usersRepository.init(app, MongoClient);
+require("./routes/users.js")(app, usersRepository);
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-//require("./routes/songs.js")(app);
+
+let indexRouter = require('./routes/index');
 require("./routes/authors.js")(app);
 
 
@@ -45,7 +63,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
