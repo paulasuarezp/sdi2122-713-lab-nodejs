@@ -11,9 +11,15 @@ let bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+const { MongoClient } = require("mongodb");
+const url =
+    'mongodb://admin:paulasdi@tiendamusica-shard-00-00.gjfhg.mongodb.net:27017,tiendamusica-shard-00-01.gjfhg.mongodb.net:27017,tiendamusica-shard-00-02.gjfhg.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-n8bnv7-shard-0&authSource=admin&retryWrites=true&w=majority';
+app.set('connectionStrings', url);
+require("./routes/songs.js")(app, MongoClient);
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-require("./routes/songs.js")(app);
+//require("./routes/songs.js")(app);
 require("./routes/authors.js")(app);
 
 

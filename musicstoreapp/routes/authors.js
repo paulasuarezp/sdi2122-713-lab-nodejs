@@ -16,7 +16,6 @@ module.exports = function (app) {
         }];
 
         let response = {
-            seller: 'Tienda de canciones',
             authors: authors
         }
 
@@ -56,7 +55,7 @@ module.exports = function (app) {
             res.send("Parámetro \"nombre\" no enviado en la petición");
     });
 
-    app.get('/authors/*', function (req, res) {
+    app.get('/authors*', function (req, res) {
         res.redirect("/authors");
     });
 };
