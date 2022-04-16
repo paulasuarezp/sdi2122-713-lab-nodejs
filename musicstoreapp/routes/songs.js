@@ -58,12 +58,25 @@ module.exports = function (app, songsRepository, commentsRepository) {
     });
 
     app.get('/songs/:id', function (req, res) {
+        let userInSession = req.session.user;
+        let songId = ObjectId(req.params.id);
+
         // let filter = {_id: req.params.id}; --> Se trata como String, así no funciona
-        let filter = {_id: ObjectId(req.params.id)}; // --> Se trata como objeto
+        let filter = {_id: songId}; // --> Se trata como objeto
         let options = {};
+
         songsRepository.findSong(filter, options).then(song => {
-            commentsRepository.getComments({song_id: ObjectId(req.params.id)}).then(comments => {
-                res.render("songs/song.twig", {song: song, comments:comments});
+            commentsRepository.getComments({song_id: songId }, {}).then(comments => {
+                let cantBuy = userInSession == song.author;
+                filter = {user: userInSession, songId: songId};
+                songsRepository.getPurchase(filter, options).then(purchase => {
+                    if(purchase != null){
+                        cantBuy = true;
+                    }
+                    res.render("songs/song.twig", {song: song, comments:comments, cantBuy: cantBuy});
+                }).catch(error => {
+                    res.send("Se ha producido un error al comprobar si se puede comprar la canción " + error)
+                });
             }).catch(error => {
                 res.send("Se ha producido un error al buscar los comentarios para la canción " + error)
             });
@@ -109,18 +122,37 @@ module.exports = function (app, songsRepository, commentsRepository) {
 
     app.get('/songs/buy/:id', function (req, res) {
         let songId = ObjectId(req.params.id);
-
+        let userInSession = req.session.user;
         let shop = {
-            user: req.session.user,
+            user: userInSession,
             songId: songId
         }
-        songsRepository.buySong(shop, function (shopId) {
-            if (shopId == null) {
-                res.send("Error al realizar la compra");
-            } else {
-                res.redirect("/purchases");
+
+        let filter = {_id: songId};
+        let options ={};
+
+        songsRepository.findSong(filter,options).then(song =>{
+            if(song.author != userInSession){
+                filter = {user: userInSession, songId: songId};
+                songsRepository.getPurchase(filter, options).then(purchase => {
+                    if(purchase == null){
+                        songsRepository.buySong(shop, function (shopId) {
+                            if (shopId == null) {
+                                res.send("Error al realizar la compra");
+                            } else {
+                                res.redirect("/purchases");
+                            }
+                        })
+                    } else{
+                        res.send("Ya ha comprado la canción.")
+                    }
+                })
             }
-        })
+        }).catch(error => {
+            res.send("Se ha producido un error, no se puede encontrar la canción " + error)
+        });
+
+
     });
 
     app.get('/purchases', function (req, res) {
@@ -136,7 +168,7 @@ module.exports = function (app, songsRepository, commentsRepository) {
             songsRepository.getSongs(filter, options).then(songs => {
                 res.render("purchase.twig", {songs: songs});
             }).catch(error => {
-                res.send("Se ha producido un error al listar las publicaciones del usuario: " + error)
+                res.send("Se ha producido un error al listar las canciones del usuario: " + error)
             });
         }).catch(error => {
             res.send("Se ha producido un error al listar las canciones del usuario " + error)

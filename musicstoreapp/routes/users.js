@@ -36,7 +36,7 @@ module.exports = function (app, usersRepository) {
     usersRepository.findUser(filter, options).then(user => {
       if (user == null) {
         req.session.user = null;
-//res.send("Usuario no identificado");
+        //res.send("Usuario no identificado");
         res.redirect("/users/login" +
             "?message=Email o password incorrecto"+
             "&messageType=alert-danger ");
@@ -56,7 +56,7 @@ module.exports = function (app, usersRepository) {
 
 
 
-        app.get('/users/logout', function (req, res) {
+  app.get('/users/logout', function (req, res) {
     req.session.user = null;
     res.send("El usuario se ha desconectado correctamente");
   })
