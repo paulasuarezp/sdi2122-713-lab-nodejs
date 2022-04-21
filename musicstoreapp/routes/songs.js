@@ -147,6 +147,8 @@ module.exports = function (app, songsRepository, commentsRepository) {
                         res.send("Ya ha comprado la canción.")
                     }
                 })
+            } else{
+                res.send("No puede comprar esta canción.")
             }
         }).catch(error => {
             res.send("Se ha producido un error, no se puede encontrar la canción " + error)
