@@ -73,10 +73,25 @@ module.exports = function (app, songsRepository, commentsRepository) {
                     if(purchase != null){
                         cantBuy = true;
                     }
-                    res.render("songs/song.twig", {song: song, comments:comments, cantBuy: cantBuy});
+                    let settings = {
+                        url: "http://api.currencylayer.com/live?access_key=80bc601885816df43cca64738b3d7c9e&currencies=EUR,USD",
+                        method: "get"
+                    }
+                    let rest = app.get("rest");
+                    rest(settings, function (error, response, body) {
+                        console.log("cod: " + response.statusCode + " Cuerpo :" + body);
+                        let responseObject = JSON.parse(body);
+                        let rateUSD = responseObject.quotes.USDEUR;
+                        // nuevo campo "usd" redondeado a dos decimales
+                        let songValue= song.price/rateUSD;
+                        song.usd = Math.round(songValue * 100) / 100;
+                        res.render("songs/song.twig", {song: song, comments:comments, cantBuy: cantBuy});
+                    })
+
                 }).catch(error => {
                     res.send("Se ha producido un error al comprobar si se puede comprar la canción " + error)
                 });
+
             }).catch(error => {
                 res.send("Se ha producido un error al buscar los comentarios para la canción " + error)
             });

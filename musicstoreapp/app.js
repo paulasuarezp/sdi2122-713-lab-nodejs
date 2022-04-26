@@ -6,8 +6,9 @@ let logger = require('morgan');
 
 
 let app = express();
-let jwt = require('jsonwebtoken');
-app.set('jwt', jwt);
+
+let rest = require('request');
+app.set('rest', rest);
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -17,6 +18,11 @@ app.use(function(req, res, next) {
   // Debemos especificar todas las headers que se aceptan. Content-Type , token
   next();
 });
+
+let jwt = require('jsonwebtoken');
+app.set('jwt', jwt);
+
+
 
 
 let expressSession = require('express-session');
